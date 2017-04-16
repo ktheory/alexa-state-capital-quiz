@@ -1,7 +1,10 @@
 AnswerIntent the answer is {Answer}
 AnswerIntent my answer is {Answer}
 AnswerIntent is it {Answer}
+AnswerIntent it is {Answer}
 AnswerIntent {Answer} is my answer
+AnswerIntent {Answer} I think
+AnswerIntent I think it is {Answer}
 AnswerIntent {Answer}
 
 AMAZON.StartOverIntent start game

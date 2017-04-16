@@ -1,5 +1,5 @@
 {"intents": [
-    {"intent": "AnswerIntent", "slots": [{"name": "Answer", "type": "AMAZON.NUMBER"}]},
+    {"intent": "AnswerIntent", "slots": [{"name": "Answer", "type": "STATES_CAPITALS"}]},
     {"intent": "DontKnowIntent"},
     {"intent": "AMAZON.StartOverIntent"},
     {"intent": "AMAZON.RepeatIntent"},

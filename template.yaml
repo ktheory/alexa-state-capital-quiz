@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: State Capital Quiz Alexa Skill
+
+# Based on this SAM template: https://developer.amazon.com/alexa-skills-kit
+Resources:
+  AlexaSkillFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src
+      Handler: index.handler
+      #Runtime: nodejs4.3
+      Runtime: nodejs6.10
+      Events:
+        AlexaSkillEvent:
+          Type: AlexaSkill
+
+Outputs:
+  LambdaArn:
+    Value: !GetAtt AlexaSkillFunction.Arn

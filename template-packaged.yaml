@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: State Capital Quiz Alexa Skill
+Outputs:
+  LambdaArn:
+    Value:
+      Fn::GetAtt:
+      - AlexaSkillFunction
+      - Arn
+Resources:
+  AlexaSkillFunction:
+    Properties:
+      CodeUri: s3://aaron-alexa-skills/state-capital-quiz/c63dd7b5f2e291f9e5a08c5a5663bdb0
+      Events:
+        AlexaSkillEvent:
+          Type: AlexaSkill
+      Handler: index.handler
+      Runtime: nodejs6.10
+    Type: AWS::Serverless::Function
+Transform: AWS::Serverless-2016-10-31
