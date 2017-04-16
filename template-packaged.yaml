@@ -9,7 +9,7 @@ Outputs:
 Resources:
   AlexaSkillFunction:
     Properties:
-      CodeUri: s3://aaron-alexa-skills/state-capital-quiz/c63dd7b5f2e291f9e5a08c5a5663bdb0
+      CodeUri: s3://aaron-alexa-skills/state-capital-quiz/1b816a63700d5a2cf26314fc16338c61
       Events:
         AlexaSkillEvent:
           Type: AlexaSkill
