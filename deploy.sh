@@ -8,9 +8,9 @@ set -e
 # Package and deploy the template on S3
 aws cloudformation package --template-file template.yaml \
   --s3-bucket aaron-alexa-skills \
-  --s3-prefix state-capital-quiz \
+  --s3-prefix math-quiz \
   --output-template-file template-packaged.yaml
 
 aws cloudformation deploy --template-file template-packaged.yaml \
-  --stack-name alexa-state-capital-quiz \
+  --stack-name alexa-math-quiz \
   --capabilities CAPABILITY_IAM

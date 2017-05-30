@@ -1,14 +1,21 @@
 "use strict";
 const APP_ID = undefined;  // TODO replace with your app ID (OPTIONAL).
 const Alexa = require("alexa-sdk");
-const S = require('sanctuary');
 
-var GAME_STATES = {
+const GAME_STATES = {
     TRIVIA: "_TRIVIAMODE", // Asking trivia questions.
     START: "_STARTMODE" // Entry point, start the game.
 };
-//var questions = require("./questions");
-const questions = require("./states");
+
+// Folktale dependencies
+const O = require('core.operators');
+const Maybe = require('data.maybe');
+
+// Set up questions
+const operand = (min) => (max) =>
+  Math.floor(Math.random() * (max - min)) + min
+const newOperands = [operand(1)(5), operand(1)(5)];
+const questionFromOperands = (op) => `What is ${op[0]} plus ${op[1]}?`;
 
 /**
  * When editing your questions pay attention to your punctuation. Make sure you use question marks or periods.
@@ -17,7 +24,7 @@ const questions = require("./states");
 var languageString = {
     "en": {
         "translation": {
-            "GAME_NAME" : "State Capitals Quiz", // Be sure to change this for your skill.
+            "GAME_NAME" : "Math Quiz", // Be sure to change this for your skill.
             "REPEAT_QUESTION_MESSAGE": "To repeat the last question, say, repeat. ",
             "ASK_MESSAGE_START": "Would you like to start playing?",
             "STOP_MESSAGE": "Okay. Goodbye.",
@@ -25,7 +32,7 @@ var languageString = {
             "NO_MESSAGE": "Ok, we\'ll play another time. Goodbye!",
             "TRIVIA_UNHANDLED": "Try saying the name of a state or capital",
             "START_UNHANDLED": "Say start to start a new game.",
-            "NEW_GAME_MESSAGE": "Hi Adrian. Let\'s practice some state capitals. ",
+            "NEW_GAME_MESSAGE": "Hi Adrian. Let\'s practice some math. ",
             "ANSWER_CORRECT_MESSAGE": "Correct. ",
             "ANSWER_WRONG_MESSAGE": "That\'s incorrect. ",
             "CORRECT_ANSWER_MESSAGE": "The correct answer is %s. ",
@@ -68,18 +75,18 @@ var newSessionHandlers = {
 const startStateHandlers = Alexa.CreateStateHandler(GAME_STATES.START, {
     "StartGame": function (newGame) {
         var speechOutput = newGame ? this.t("NEW_GAME_MESSAGE") : "";
-        //var gameQuestions = questions;
-        const currentQuestionIndex = nextQuestionIndex(questions)
-        var spokenQuestion = questions[currentQuestionIndex].question;
-        var repromptText = spokenQuestion;
+
+        // Make a new question
+        const ops = [gameOperands(), gameOperands()];
+        const spokenQuestion = questionFromOperands(ops);
+        const repromptText = spokenQuestion;
 
         speechOutput += repromptText;
 
         Object.assign(this.attributes, {
             "speechOutput": repromptText,
             "repromptText": repromptText,
-            "currentQuestionIndex": currentQuestionIndex,
-            "correctAnswerText": questions[currentQuestionIndex].answer
+            "operands": ops,
         });
 
         // Set the current state to trivia mode. The skill will now use handlers defined in triviaStateHandlers
@@ -121,47 +128,45 @@ const handleUserGuess = (ctx, userGaveUp) => {
 
   console.log("GUESS: " + userAnswer(ctx));
   let speechOutput = ""
-  if (S.equals(correctAnswer(ctx), userAnswer(ctx))) {
+  if (correctAnswer(ctx).value === userAnswer(ctx).value) {
     speechOutput += "Correct. "
-
   } else {
     speechOutput += "Sorry. The correct answer is " + correctAnswer(ctx) + ". "
   }
 
+  // Make a new question
+  const ops = [gameOperands(), gameOperands()];
+  const spokenQuestion = questionFromOperands(ops);
+  const repromptText = spokenQuestion;
 
-  //const nextQuestionIndex = currentQuestionIndex + 1
-  const idx = nextQuestionIndex(questions)
-  const nextQuestion = questions[idx].question
 
-  speechOutput += nextQuestion
+  speechOutput += spokenQuestion
 
 
   Object.assign(ctx.attributes, {
     "speechOutput": speechOutput,
     "repromptText": nextQuestion,
-    "currentQuestionIndex": idx
+    "operands": ops
   });
 
   ctx.emit(":ask", speechOutput, nextQuestion);
 }
 
-const userAnswer = (ctx) =>
-  S.gets(
-    S.is(String),
-    ['event', 'request', 'intent', 'slots', 'Answer', 'value']
-  )(ctx)
-
-const correctAnswer = (ctx) =>
-  S.chain(
-    S.get( S.is(String), "answer"),
-    S.chain(S.at(S.__, questions), currentQuestionIndex(ctx))
+// gets([keys], object)
+// [Strings] → Object → Just(α) | Nothing
+//
+// Takes an array of property names, and an object, and returns Just
+// the value at the given path if such a path exists, Nothing otherwise.
+//
+// Similar to Sanctuary's `gets` without the predicate:
+// https://sanctuary.js.org/#gets
+const gets = (keys) => (data) =>
+  keys.reduce(
+    (acc, key) => acc.map(O.get(key)).chain(Maybe.fromNullable),
+    Maybe.of(data)
   )
 
-const currentQuestionIndex = (ctx) =>
-  S.gets(
-    S.is(Number),
-    ['attributes', 'currentQuestionIndex']
-  )(ctx)
+const userAnswer = gets(['event', 'request', 'intent', 'slots', 'Answer', 'value'])
 
-const nextQuestionIndex = (questions) =>
-  Math.floor(Math.random() * questions.length)
+const currentOperands = gets(['attributes', 'operands'])
+const correctAnswer = (ctx) => currentOperands(ctx).map( (ary) => ary.reduce( (sum,i) => sum + i) )
