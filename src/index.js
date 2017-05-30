@@ -14,7 +14,7 @@ const Maybe = require('data.maybe');
 // Set up questions
 const operand = (min) => (max) =>
   Math.floor(Math.random() * (max - min)) + min
-const newOperands = [operand(1)(5), operand(1)(5)];
+const newOperands = () => [operand(1)(5), operand(1)(5)];
 const questionFromOperands = (op) => `What is ${op[0]} plus ${op[1]}?`;
 
 /**
@@ -77,7 +77,7 @@ const startStateHandlers = Alexa.CreateStateHandler(GAME_STATES.START, {
         var speechOutput = newGame ? this.t("NEW_GAME_MESSAGE") : "";
 
         // Make a new question
-        const ops = [gameOperands(), gameOperands()];
+        const ops = newOperands()
         const spokenQuestion = questionFromOperands(ops);
         const repromptText = spokenQuestion;
 
@@ -131,11 +131,11 @@ const handleUserGuess = (ctx, userGaveUp) => {
   if (correctAnswer(ctx).value === userAnswer(ctx).value) {
     speechOutput += "Correct. "
   } else {
-    speechOutput += "Sorry. The correct answer is " + correctAnswer(ctx) + ". "
+    speechOutput += "Sorry. The correct answer is " + correctAnswer(ctx).value + ". "
   }
 
   // Make a new question
-  const ops = [gameOperands(), gameOperands()];
+  const ops = newOperands();
   const spokenQuestion = questionFromOperands(ops);
   const repromptText = spokenQuestion;
 
@@ -145,11 +145,11 @@ const handleUserGuess = (ctx, userGaveUp) => {
 
   Object.assign(ctx.attributes, {
     "speechOutput": speechOutput,
-    "repromptText": nextQuestion,
+    "repromptText": spokenQuestion,
     "operands": ops
   });
 
-  ctx.emit(":ask", speechOutput, nextQuestion);
+  ctx.emit(":ask", speechOutput, spokenQuestion);
 }
 
 // gets([keys], object)
@@ -166,7 +166,7 @@ const gets = (keys) => (data) =>
     Maybe.of(data)
   )
 
-const userAnswer = gets(['event', 'request', 'intent', 'slots', 'Answer', 'value'])
+const userAnswer = (ctx) => gets(['event', 'request', 'intent', 'slots', 'Answer', 'value'])(ctx).map(parseInt)
 
 const currentOperands = gets(['attributes', 'operands'])
 const correctAnswer = (ctx) => currentOperands(ctx).map( (ary) => ary.reduce( (sum,i) => sum + i) )
