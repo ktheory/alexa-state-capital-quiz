@@ -1,6 +1,13 @@
 # Alexa Skill state capital quiz
 
-This Alex Skill is a little game to help my kids learn US state capitals; and an excuse for me to play around with:
+This Alex Skill is a little game to help my kids learn US state capitals.
+
+It asks questions like:
+
+"What's the capital of North Carolina?"
+"Albany is the capital of which state?"
+
+It's an excuse for me to play around with:
 
 - [AWS Lambda](https://aws.amazon.com/lambda/)
 - [The Alexa Skills node
