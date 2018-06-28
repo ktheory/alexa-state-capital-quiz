@@ -14,7 +14,7 @@ const Maybe = require('data.maybe');
 // Set up questions
 const operand = (min) => (max) =>
   Math.floor(Math.random() * (max - min)) + min
-const newOperands = () => [operand(1)(5), operand(1)(5)];
+const newOperands = () => [operand(1)(20), operand(1)(20)];
 const questionFromOperands = (op) => `What is ${op[0]} plus ${op[1]}?`;
 
 /**
